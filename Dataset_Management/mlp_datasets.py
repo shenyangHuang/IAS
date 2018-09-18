@@ -192,6 +192,7 @@ def All_MNISTlike(val_split, normalization="numerical"):
 	(x2_train, y2_train), (x2_test, y2_test) = fashion_mnist.load_data()
 
 	num_classes = 20
+
 	x1_train = x1_train.reshape(60000, 784)
 	x1_test = x1_test.reshape(10000, 784)
 	x2_train = x2_train.reshape(60000, 784)
@@ -206,7 +207,6 @@ def All_MNISTlike(val_split, normalization="numerical"):
 		x1_test = (x1_test / 128 -1)
 		x2_train = (x2_train / 128 -1)
 		x2_test = (x2_test / 128 -1)
-
 	elif(normalization == "std"):
 		S = np.std(x1_train,axis=0)
 		M = np.mean(x1_train,axis=0)
@@ -223,8 +223,6 @@ def All_MNISTlike(val_split, normalization="numerical"):
 				S[i] = 1.0
 		x2_train = (x2_train - M) / S
 		x2_test = (x2_test - M) / S
-
-
 	else:
 		x1_train = x1_train / 255
 		x1_test = x1_test / 255
