@@ -21,7 +21,7 @@ def main():
     '''
     hyperparameters 
     '''
-    lr=0.00001
+    lr=0.0001
     seed = 29
     epochs = 200
     epoch_limit = 20
