@@ -21,7 +21,7 @@ def main():
     '''
     set up training, validation and testing data
     '''
-	datasets = mlp_datasets.All_MNISTlike(0.1, normalization="numerical"):
+	datasets = mlp_datasets.All_MNISTlike(0.1, normalization="numerical")
 	#use 10 MNIST classes as base knowledge
 	for i in range(1,10):
 		mnist_datasets = mlp_datasets.sum_data(datasets,i,0)
