@@ -21,33 +21,33 @@ def main():
     '''
     set up training, validation and testing data
     '''
-	datasets = mlp_datasets.All_MNISTlike(0.1, normalization="numerical")
-	#use 10 MNIST classes as base knowledge
-	for i in range(1,10):
-		mnist_datasets = mlp_datasets.sum_data(datasets,i,0)
+    datasets = mlp_datasets.All_MNISTlike(0.1, normalization="numerical")
+    #use 10 MNIST classes as base knowledge
+    for i in range(1,10):
+        mnist_datasets = mlp_datasets.sum_data(datasets,i,0)
 
-	main =  Controller.Controller(seed,'main')
+    main =  Controller.Controller(seed,'main')
 
-	print("training step 0")
-	accuracy = main.train_Teacher(datasets[0], architecture=[256,256],
+    print("training step 0")
+    accuracy = main.train_Teacher(datasets[0], architecture=[256,256],
                                     input_dim=784, output_dim=10, 
                                     lr=lr,epochs=epochs, batch_size=32, 
                                     random_seed=seed,mute=True,test=True,class_curve=True)
-	print("Teacher network achieved test accuracy " + str(accuracy[1]))
-	params = main.export()
-	SAS_Controller = Controller.Controller(seed,'sas')
-	SAS_Controller.param_import(params)
+    print("Teacher network achieved test accuracy " + str(accuracy[1]))
+    params = main.export()
+    SAS_Controller = Controller.Controller(seed,'sas')
+    SAS_Controller.param_import(params)
 
-	'''
+    '''
     Starting Incremental Architecture Search procedure
     '''
-	for i in range(10,20):
-		print ("--------------------------------------------------------------")
-		print("training step " + str(i-9))
-		print ("saturate with new data")
-		SASpath = "./logs/"+str(i-9)+"_1SAS"
+    for i in range(10,20):
+        print ("--------------------------------------------------------------")
+        print("training step " + str(i-9))
+        print ("saturate with new data")
+        SASpath = "./logs/"+str(i-9)+"_1SAS"
 
-		SAS_accuracy = SAS_Controller.execute(datasets[0],input_dim=784,
+        SAS_accuracy = SAS_Controller.execute(datasets[0],input_dim=784,
                                             output_dim=(i+1),lr=lr,epochs=epochs,
                                             batch_size=32,random_seed=seed,mute=True,
                                             test=True,noVal=False,log_path=SASpath,class_curve=True)
