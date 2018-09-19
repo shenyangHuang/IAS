@@ -45,6 +45,7 @@ def main():
         print ("--------------------------------------------------------------")
         print("training step " + str(i-9))
         print ("saturate with new data")
+        datasets = mlp_datasets.sum_data(datasets,i,0)
         SASpath = "./logs/"+str(i-9)+"_1SAS"
 
         SAS_accuracy = SAS_Controller.execute(datasets[0],input_dim=784,
