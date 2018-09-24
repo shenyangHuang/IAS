@@ -225,6 +225,14 @@ class Controller:
 					lr=0.001,epochs=100, 
 					batch_size=32,random_seed=29,
 					mute=False,test=True,dropout=True,class_curve=False):
+
+		#set up random seed 
+		from numpy.random import seed
+		seed(random_seed)
+		from tensorflow import set_random_seed
+		set_random_seed(random_seed)
+
+
 		verbose=0
 		if(mute):
 			verbose=0
@@ -295,6 +303,14 @@ class Controller:
 				random_seed=29,mute=False,
 				test=True,noVal=False,
 				log_path="none",dropout=True,class_curve=False):
+
+		#set up random seed 
+		from numpy.random import seed
+		seed(random_seed)
+		from tensorflow import set_random_seed
+		set_random_seed(random_seed)
+
+
 		verbose=0
 		if(mute):
 			verbose=0
@@ -400,6 +416,11 @@ class Controller:
 				test=True,noVal=False,
 				upload=False,dropout=True,class_curve=False):
 
+		#set up random seed 
+		from numpy.random import seed
+		seed(random_seed)
+		from tensorflow import set_random_seed
+		set_random_seed(random_seed)
 
 		verbose=0
 		if(mute):
