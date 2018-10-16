@@ -1,10 +1,10 @@
 # Exploring Class-incremental Learning Using Incremental Architecture Search
 
 # To run the experiments:
-To replicate the MNIST experiment in the paper:
-
-  python -u runMLP_SAS.py |& tee output.txt
-
+**To replicate the MNIST experiment in the paper:**
+``
+python -u runMLP_SAS.py |& tee output.txt
+``
 To run MNIST experiment with a fixed architecture:
 
   python -u fixed_architecture.py |& tee output.txt
