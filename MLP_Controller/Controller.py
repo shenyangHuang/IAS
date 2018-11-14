@@ -26,6 +26,9 @@ requires a unique name for controller and it is also used for checkpointing purp
 
 class Controller:
 
+	'''
+	initialize the controller 
+	'''
 	def __init__(self,randomSeed,name):
 		self.weights = []
 		self.bias = []
@@ -35,44 +38,22 @@ class Controller:
 
 
 
+	'''
+	export the import information in the controller 
+	'''
 	def export(self):
 		return {'weights':copy.deepcopy(self.weights),
 				'bias':copy.deepcopy(self.bias),
 				'architecture':copy.deepcopy(self.architecture)}
 
-
+	'''
+	import parameters from other controllers 
+	'''
 	def param_import(self,params):
 		self.weights = copy.deepcopy(params['weights'])
 		self.bias = copy.deepcopy(params['bias'])
 		self.architecture = copy.deepcopy(params['architecture'])
-
-	def set_architecture(self,architecture):
-		self.architecture = copy.deepcopy(architecture)
-
-	def set_seed(self,seed):
-		self.seed = seed 
-
-	def return_architecture(self):
-		return self.architecture
-
-
-	def print_architecture(self):
-		print ("the network architecture is currently"+ str(self.architecture))
-
-
-	def print_shape(self):
-		for i in range(0,len(self.weights)):
-			print("shape of weight matrix at layer" + str(i))
-			print(np.array(self.weights[i]).shape)
-
-		for i in range(0,len(self.bias)):
-			bias = self.bias[i]
-			if(isinstance(bias,tf.Tensor)):
-				bias = bias.eval()
-			print("shape of bias matrix at layer" + str(i))
-			print(np.array(self.bias[i]).shape)
 	
-
 	#randomly maps to a certain size 
 	def randomMapping(self,n,q):
 		if q < n:
@@ -90,8 +71,6 @@ class Controller:
 			base[i] = np.count_nonzero(mapping == i)
 		return base
 
-
-	
 
 	#widen the specified layer 
 	#used for Net2WiderNet
@@ -117,7 +96,6 @@ class Controller:
 			bias_remap[i] = input_bias[input_mapping[i]] / occurrence[input_mapping[i]]
 
 		return {'input_remap':input_remap, 'output_remap':output_remap, 'bias_remap':bias_remap}
-
 
 
 	#adds uniform noise to break symmetry 
@@ -151,7 +129,6 @@ class Controller:
 
 
 	def Net2DeeperNet(self,layer_number):
-		
 		#make an identity layer based on the size of the indicated layer
 		num_hidden = self.architecture[layer_number-1]
 
@@ -192,7 +169,10 @@ class Controller:
 			temp1_architecture = temp2_architecture
 
 
-	#Transform output layer weights and bias to add in more output neurons 
+	'''
+	Transform output layer weights and bias to add in more output neurons 
+	new weights are randomly initializaed 
+	'''
 	def outLayer_transform(self,new_num,mean=0.0,std_dev=0.35):
 		
 
@@ -218,8 +198,10 @@ class Controller:
 
 
 
-	#trains one layer MLP as starting point 
-	#if Test is True, then returns test accuracy, else returns validation accuracy 
+	'''
+	trains the initial teacher network
+	if Test is True, then returns test accuracy, else returns validation accuracy 
+	'''
 	def train_Teacher(self,dataset,architecture=[20],
 					input_dim=784,output_dim=10, 
 					lr=0.001,epochs=100, 
@@ -296,7 +278,9 @@ class Controller:
 		return score
 
 
-	#execute and train the transformed model
+	'''
+	train the current model
+	'''
 	def execute(self,dataset,input_dim=784,
 				output_dim=10,lr=0.001,
 				epochs=100,batch_size=32,
@@ -408,7 +392,9 @@ class Controller:
 		return score
 
 
-	#execute and train the transformed model
+	'''
+	Construct a baseline using the same architecture but retrained from random initialization
+	'''
 	def baseline(self,dataset,input_dim=784,
 				output_dim=10,lr=0.001,
 				epochs=100,batch_size=32,
@@ -497,7 +483,9 @@ class Controller:
 		return score
 
 
-	#get test accuracy 
+	'''
+	predict on the test set and obtain the test accuracy
+	''' 
 	def test(self,dataset,input_dim=784,output_dim=10,lr=0.001,batch_size=32,mute=True):
 
 		verbose=0
@@ -532,7 +520,9 @@ class Controller:
 		score = model.evaluate(x_test, y_test, batch_size=batch_size,verbose=verbose)
 		return score
 
-	#get accuracy for different classes 
+	'''
+	Test accuray for individual classes
+	''' 
 	def class_accuracy(self,dataset,input_dim=784,output_dim=10,lr=0.001,batch_size=32,mute=True):
 		verbose=0
 		if(mute):
@@ -576,170 +566,6 @@ class Controller:
 			print ("class " + str(i+1) + " : " + str(class_count[i][0]) + " / " + str(class_count[i][1]))
 			accuracy = float(class_count[i][0]) / float(class_count[i][1])
 			print ("test accuracy is " + str(accuracy) )
-
-
-
-	#takes in extra input of a curriculum compare to execute
-	#curriculum is a mask for the previous dataset only 
-	def curriculum_learning(self,prev_dataset,new_dataset,curriculum,input_dim=784,
-					output_dim=10,lr=0.001,
-					epochs=100,batch_size=32,
-					random_seed=29,mute=False,
-					test=True,log_path="none",dropout=True):
-		verbose=0
-		if(mute):
-			verbose=0
-		else:
-			verbose=1	
-		
-		#check changes in num_classes and change output layer correspondinglys
-		past_dim = len(self.bias[-1])
-		if(output_dim > past_dim):
-			self.outLayer_transform(output_dim,mean=0.0,std_dev=0.35)
-		x_train_old = np.asarray(prev_dataset.train_images)
-		y_train_old = np.asarray(prev_dataset.train_labels)
-		x_val_old = np.asarray(prev_dataset.validation_images)
-		y_val_old = np.asarray(prev_dataset.validation_labels)
-		x_test_old = np.asarray(prev_dataset.test_images)
-		y_test_old = np.asarray(prev_dataset.test_labels)
-
-		x_train_new = np.asarray(new_dataset.train_images)
-		y_train_new = np.asarray(new_dataset.train_labels)
-		x_val_new = np.asarray(new_dataset.validation_images)
-		y_val_new = np.asarray(new_dataset.validation_labels)
-		x_test_new = np.asarray(new_dataset.test_images)
-		y_test_new = np.asarray(new_dataset.test_labels)
-
-
-		architecture = self.architecture
-		model = Sequential()
-
-		#build model
-		model.add(Dense(architecture[0], activation='relu',input_dim=input_dim))
-		for i in range(1,len(architecture)):
-			model.add(Dense(architecture[i], activation='relu'))
-			if(dropout):
-				model.add(Dropout(0.5))
-		model.add(Dense(output_dim, activation='softmax'))
-
-		#set weights and bias
-		count = 0
-		for i in range(0,len(self.weights)):
-			if(dropout):
-				if(i>0 and i%2 == 0):
-					continue
-			combined = []
-			combined.append(np.asarray(self.weights[count]))
-			combined.append(np.asarray(self.bias[count]))
-			count = count + 1
-			model.layers[i].set_weights(combined)
-		rmsprop = optimizers.RMSprop(lr=lr, rho=0.9, epsilon=None, decay=0.0)
-		model.compile(optimizer=rmsprop,
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
-
-		filepath=self.name + "execute.curriculum.hdf5"
-
-		f = open(log_path+"accuracy.txt", "w")
-		f.write("epoch,new val accuracy,old val accuracy,overall val accuracy"+'\n')
-		# print("epoch,new val accuracy,old val accuracy,overall val accuracy")
-		counter = 0
-		prev_accu = 0
-		best_accu = 0
-		patience = 0
-		for i in range(0,epochs):
-			#if training epochs exceeds curriculum, just recycle again
-			if(counter == len(curriculum)):
-				counter = 0
-			x = []
-			y = []
-			for j in range(0,len(x_train_old)):
-				#only take data samples based on mask
-				if(curriculum[i][j] == 1):
-					x.append(x_train_old[j])
-					y.append(y_train_old[j])
-			isEmpty = False
-			if(x==[]):
-				isEmpty = True
-			x = np.asarray(x)
-			y = np.asarray(y)
-			if(not isEmpty):
-				x = np.concatenate((x,x_train_new),axis=0)
-				y = np.concatenate((y,y_train_new),axis=0)
-			else:
-				x = x_train_new
-				y = y_train_new
-
-			idx = np.random.permutation(len(x))
-			x = x[idx]
-			y = y[idx]
-
-			model.train_on_batch(x, y)
-			new_accuracy = model.test_on_batch(x_val_new, y_val_new)
-			old_accuracy = model.test_on_batch(x_val_old, y_val_old)
-			x_overall = np.concatenate((x_val_new,x_val_old),axis=0)
-			y_overall = np.concatenate((y_val_new,y_val_old),axis=0)
-			overall = model.test_on_batch(x_overall,y_overall)
-			# print (str(i)+","+str(new_accuracy[1])+','+str(old_accuracy[1])+','+str(overall[1]) + '\n')
-			f.write(str(i)+","+str(new_accuracy[1])+','+str(old_accuracy[1])+','+str(overall[1]) + '\n')
-			counter = counter + 1
-
-			#implementing check pointing base on overall accuracy 
-			if(overall[1] > best_accu):
-				model.save_weights(filepath)
-				best_accu = overall[1]
-			if(overall[1] < prev_accu):
-				patience = patience + 1
-			if(overall[1] >= prev_accu):
-				patience = 0
-			if(patience >= 20):
-				break
-			if(i > 100):
-				#too long 
-				break
-			prev_accu = overall[1]
-
-
-		model.load_weights(filepath)
-		score = 0
-		if(test):
-			x_test = np.concatenate((x_test_new,x_test_old),axis=0)
-			y_test = np.concatenate((y_test_new,y_test_old),axis=0)
-			predictions = model.predict(x_test,verbose=verbose)
-			class_count = np.zeros((output_dim,2))
-			for i in range(0,len(predictions)):
-				correct = np.argmax(y_test[i])
-				class_count[correct][1] = class_count[correct][1] + 1
-				if( (np.argmax(predictions[i])) == correct):
-					class_count[correct][0] = class_count[correct][0] + 1
-			for i in range(0,output_dim):
-				print ("class " + str(i+1) + " : " + str(class_count[i][0]) + " / " + str(class_count[i][1]))
-				accuracy = float(class_count[i][0]) / float(class_count[i][1])
-				print ("test accuracy is " + str(accuracy) )
-			score = model.evaluate(x_test, y_test, batch_size=batch_size,verbose=verbose)
-		else:
-			x_val = np.concatenate((x_val_new,x_val_old),axis=0)
-			y_val = np.concatenate((y_val_new,y_val_old),axis=0)
-			score = model.evaluate(x_val, y_val, batch_size=batch_size,verbose=verbose)
-		weights = []
-		bias = []
-		for i in range(0,len(model.layers)):
-			parameters = model.layers[i].get_weights()
-			#dropout layers doesn't have weight 
-			if(not parameters):
-				continue
-			weights.append(copy.deepcopy(parameters[0]))
-			bias.append(copy.deepcopy(parameters[1]))
-		
-		self.weights = weights
-		self.bias = bias 
-		return score
-
-
-
-
-
-
 
 
 

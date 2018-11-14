@@ -6,7 +6,9 @@ import copy
 
 
 
-
+'''
+Trains each sampled architecture for a limited epoch size
+'''
 def Just_Train(dataset,output_dim,params,instruction,lr,epoch_limit,restart_num,random_seed=29):    
     group_nets = []
     max_accuracy = 0
@@ -37,6 +39,10 @@ def Just_Train(dataset,output_dim,params,instruction,lr,epoch_limit,restart_num,
     return {'accuracy':max_accuracy,'params':output_params}
     
 
+
+'''
+Simple Architecture Search approach sampling 6 architectures 
+'''
 def simple_search(dataset,params,val_accuracy,N_workers,restart_num=3,output_dim=10,lr=0.001,epoch_limit=20,random_seed=29):
 
     print ("--------------------------------------------------------------")
@@ -50,9 +56,12 @@ def simple_search(dataset,params,val_accuracy,N_workers,restart_num=3,output_dim
     architecture = params['architecture']
     layer = len(architecture)
     instructions = []
+    
+    '''
+    instructions are guideline for architecture transformations
+    '''
     instructions.append({'Wider':[layer],'Deeper':[]})
     instructions.append({'Wider':[layer,layer],'Deeper':[]})
-    instructions.append({'Wider':[],'Deeper':[layer]})
     instructions.append({'Wider':[],'Deeper':[layer,layer+1]})
     instructions.append({'Wider':[layer],'Deeper':[layer]})
     instructions.append({'Wider':[],'Deeper':[layer]})
@@ -76,13 +85,18 @@ def simple_search(dataset,params,val_accuracy,N_workers,restart_num=3,output_dim
 
 
     print("function call preparation complete ")
+    '''
+    train the candidates in parallel
+    '''
     candidates = pool.map(Just_Train,l_dataset,l_output_dim,l_params,instructions,l_lr,l_epoch_limit,l_restart_num,l_seed)
     print("all candidates received")
     print(datetime.datetime.now())
 
     best_accu = 0
     best_param = 0
-    # find the best candidate
+    '''
+    identify the best candidate
+    '''
     for candidate in candidates:
         if candidate is None:
             print("find a none type")
