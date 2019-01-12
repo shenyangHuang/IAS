@@ -123,6 +123,11 @@ def create_2d(num_classes):
 
 #set up MNIST like datasets (MNIST and Fashion MNIST) for simple Incremental Learning Setting 
 #now use randomized order 
+'''
+data_str indicate which dataset is included
+
+
+'''
 def Incremental_MNISTlike(data_str, val_split,order,normalization="numerical"):
 	if(data_str == "MNIST"):
 		(x_train, y_train), (x_test, y_test) = mnist.load_data()

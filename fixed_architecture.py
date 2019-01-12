@@ -24,6 +24,8 @@ def main():
     seed = 29
     epochs = 200
     default = True
+    percentage = 0.1 
+
 
     '''
     determine the arrival order of classes
