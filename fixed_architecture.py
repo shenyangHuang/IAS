@@ -4,6 +4,7 @@ import numpy as np
 import os.path
 import pickle
 import datetime
+import copy
 
 def setup_Fashion(ratio=0.1):
     datasets = mlp_datasets.Incremental_MNISTlike("Fashion", 0.1, normalization="numerical")
@@ -50,7 +51,7 @@ def main():
     '''
     print("training step 0")
     datasets = mlp_datasets.Incremental_MNISTlike("MNIST", 0.1, order,normalization="numerical")
-    datasets = mlp_datasets.sum_data(datasets,1,0)
+    datasets = mlp_datasets.sum_data(datasets,1,0,1.0)
 
     accuracy = main.train_Teacher(datasets[0], architecture=[256,256],
                                     input_dim=784, output_dim=2, 
@@ -65,9 +66,18 @@ def main():
         print ("--------------------------------------------------------------")
         print("training step " + str(i-1))
         print ("saturate with new data")
-        datasets = mlp_datasets.sum_data(datasets,i,0)
+
+        '''
+        create a curriculum that contains only a percentage of the past dataset 
+        '''
+        curriculum = copy.deepcopy(datasets)
+        datasets = mlp_datasets.sum_data(datasets,i,0,1.0)
+        curriculum = mlp_datasets.sum_data(curriculum,i,0,percentage)
+
         fixedpath = "./logs/"+str(i)+"_1fixed"
-        fixed_accuracy = main.execute(datasets[0],input_dim=784,
+
+
+        fixed_accuracy = main.execute(curriculum[0],input_dim=784,
                                             output_dim=(i+1),lr=lr,epochs=epochs,
                                             batch_size=32,random_seed=seed,mute=True,
                                             test=True,noVal=False,log_path=fixedpath,class_curve=True)
@@ -81,12 +91,12 @@ def main():
         print('')
         print('')
 
-    #train with all MNIST data in the end
-    fixed_accuracy = main.execute(datasets[0],input_dim=784,
-                                        output_dim=(i+1),lr=lr,epochs=epochs,
-                                        batch_size=32,random_seed=seed,mute=True,
-                                        test=True,noVal=True,log_path="none",class_curve=True)
-    print("fixed architecture achieved test accuracy " + str(fixed_accuracy[1]) + " with all MNIST data")
+    # #train with all MNIST data in the end
+    # fixed_accuracy = main.execute(datasets[0],input_dim=784,
+    #                                     output_dim=(i+1),lr=lr,epochs=epochs,
+    #                                     batch_size=32,random_seed=seed,mute=True,
+    #                                     test=True,noVal=True,log_path="none",class_curve=True)
+    # print("fixed architecture achieved test accuracy " + str(fixed_accuracy[1]) + " with all MNIST data")
 
 
 if __name__ == "__main__":

@@ -63,18 +63,24 @@ class DataSet(object):
 	def set_test_labels(self,test_labels):
 		self._test_labels = test_labels
 
-	def concatenate(self,indicator,new_images,new_labels):
+
+	'''
+	concatenate training, validation or test set
+	indicate a percentage to concatenate
+	percentage is a float
+	'''
+	def concatenate(self,indicator,new_images,new_labels,percentage):
 		if(indicator == "train"):
-			self._train_images = np.concatenate((self._train_images,new_images),axis=0)
-			self._train_labels = np.concatenate((self._train_labels,new_labels),axis=0)
+			self._train_images = np.concatenate((self._train_images[0:int(len(self._train_images)*percentage-1)],new_images),axis=0)
+			self._train_labels = np.concatenate((self._train_labels[0:int(len(self._train_images)*percentage-1)],new_labels),axis=0)
 			self.shuffle(indicator)
 		elif(indicator == "validation"):
-			self._validation_images = np.concatenate((self._validation_images,new_images),axis=0)
-			self._validation_labels = np.concatenate((self._validation_labels,new_labels),axis=0)
+			self._validation_images = np.concatenate((self._validation_images[0:int(len(self._train_images)*percentage-1)],new_images),axis=0)
+			self._validation_labels = np.concatenate((self._validation_labels[0:int(len(self._train_images)*percentage-1)],new_labels),axis=0)
 			self.shuffle(indicator)
 		elif(indicator == "test"):
-			self._test_images = np.concatenate((self._test_images,new_images),axis=0)
-			self._test_labels = np.concatenate((self._test_labels,new_labels),axis=0)
+			self._test_images = np.concatenate((self._test_images[0:int(len(self._train_images)*percentage-1)],new_images),axis=0)
+			self._test_labels = np.concatenate((self._test_labels[0:int(len(self._train_images)*percentage-1)],new_labels),axis=0)
 			self.shuffle(indicator)
 		else:
 			raise ValueError('can only concatenate train, val or test set')
@@ -125,8 +131,8 @@ def create_2d(num_classes):
 #now use randomized order 
 '''
 data_str indicate which dataset is included
-
-
+val_split indicates the validatiobn split
+normalization indicates the normalization techique used for the dataset
 '''
 def Incremental_MNISTlike(data_str, val_split,order,normalization="numerical"):
 	if(data_str == "MNIST"):
@@ -287,19 +293,20 @@ def split_classes(num_classes,training_images,training_labels,testing_images,tes
 
 	return datasets
 
-
+'''
+percentage indicate how much old data is included
+'''
 #sum two datsets and store it in old_index
-def sum_data(datasets,new_index,old_index):
-
+def sum_data(datasets,new_index,old_index,percentage):
 
 	old_label_num = len(datasets[old_index].train_labels[0])
 	new_label_num = len(datasets[new_index].train_labels[0])
 	if(old_label_num!=new_label_num):
 		transform_dataset(datasets,new_index,old_index)
 
-	datasets[old_index].concatenate("train",datasets[new_index].train_images,datasets[new_index].train_labels)
-	datasets[old_index].concatenate("validation",datasets[new_index].validation_images,datasets[new_index].validation_labels)
-	datasets[old_index].concatenate("test",datasets[new_index].test_images,datasets[new_index].test_labels)
+	datasets[old_index].concatenate("train",datasets[new_index].train_images,datasets[new_index].train_labels,percentage)
+	datasets[old_index].concatenate("validation",datasets[new_index].validation_images,datasets[new_index].validation_labels,percentage)
+	datasets[old_index].concatenate("test",datasets[new_index].test_images,datasets[new_index].test_labels,percentage)
 
 	return datasets
 
