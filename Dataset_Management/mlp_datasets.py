@@ -71,22 +71,25 @@ class DataSet(object):
 	'''
 	def concatenate(self,indicator,new_images,new_labels,percentage):
 		if(indicator == "train"):
-			self._train_images = np.concatenate((self._train_images[0:int(len(self._train_images)*percentage-1)],new_images),axis=0)
-			self._train_labels = np.concatenate((self._train_labels[0:int(len(self._train_images)*percentage-1)],new_labels),axis=0)
+			cutoff = int(len(self._train_images)*percentage-1)
+			self._train_images = np.concatenate((self._train_images[0:cutoff],new_images),axis=0)
+			self._train_labels = np.concatenate((self._train_labels[0:cutoff],new_labels),axis=0)
 			self.shuffle(indicator)
 		elif(indicator == "validation"):
-			self._validation_images = np.concatenate((self._validation_images[0:int(len(self._train_images)*percentage-1)],new_images),axis=0)
-			self._validation_labels = np.concatenate((self._validation_labels[0:int(len(self._train_images)*percentage-1)],new_labels),axis=0)
+			self._validation_images = np.concatenate((self._validation_images,new_images),axis=0)
+			self._validation_labels = np.concatenate((self._validation_labels,new_labels),axis=0)
 			self.shuffle(indicator)
 		elif(indicator == "test"):
-			self._test_images = np.concatenate((self._test_images[0:int(len(self._train_images)*percentage-1)],new_images),axis=0)
-			self._test_labels = np.concatenate((self._test_labels[0:int(len(self._train_images)*percentage-1)],new_labels),axis=0)
+			self._test_images = np.concatenate((self._test_images,new_images),axis=0)
+			self._test_labels = np.concatenate((self._test_labels,new_labels),axis=0)
 			self.shuffle(indicator)
 		else:
 			raise ValueError('can only concatenate train, val or test set')
 
 	def shuffle(self,indicator):
 		if(indicator == "train"):
+			print (len(self._train_images))
+			print (len(self._train_labels))
 			order = random.sample(range(0,len(self._train_images)),len(self._train_images))
 			shuffle_images=[]
 			shuffle_labels=[]
