@@ -1,4 +1,6 @@
 # Exploring Class-incremental Learning Using Incremental Architecture Search
+Link to paper:
+https://marcpickett.com/cl2018/CL-2018_paper_34.pdf
 
 # To run the experiments:
 
